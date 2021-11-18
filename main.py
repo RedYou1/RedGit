@@ -1,17 +1,70 @@
 from Global import *
 from GitLog import *
 from GitChanges import *
+import easygui
+
+def change_repo():
+    window().hide()
+    while True:
+        string = easygui.diropenbox()
+        try:
+            setRepo(string)
+            break
+        except:
+            pass
+    window().show()
+    window().main_win()
+
+class Instance(QWidget):
+    def __init__(self,path:str):
+        super().__init__()
+
+        self.path:str = path
+
+        layout:QHBoxLayout = QHBoxLayout()
+
+        layout.addWidget(QLabel(path))
+
+        remove:QPushButton = QPushButton()
+        remove.setCheckable(True)
+        remove.setText("X")
+        remove.clicked.connect(self.remove)
+        layout.addWidget(remove)
+
+        self.setLayout(layout)
+    
+    def remove(self, checked: bool = ...):
+        if removePath(self.path):
+            change_repo()
+
+    def mousePressEvent(self,e:QMouseEvent) -> None:
+        setRepo(self.path)
+        window().main_win()
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("RedGit")
-        self.main_win()
+        if repo():
+            self.main_win()
         self.showMaximized()
     
     def main_win(self):
         mainLayout:QHBoxLayout = QHBoxLayout()
+
         midLayout:QVBoxLayout = QVBoxLayout()
+
+        topLayout:QHBoxLayout = QHBoxLayout()
+        for path in paths():
+            topLayout.addWidget(Instance(path))
+        
+        add = QPushButton()
+        add.setCheckable(True)
+        add.setText("+")
+        add.clicked.connect(change_repo)
+        topLayout.addWidget(add)
+
+        midLayout.addLayout(topLayout)
 
         topmidLayout:QHBoxLayout = QHBoxLayout()
         actu:QPushButton = QPushButton()
@@ -52,16 +105,11 @@ class MainWindow(QMainWindow):
         repo().git.stash('pop')
         self.main_win()
 
-
-def main():
-    app:QApplication = QApplication(sys.argv)
-
-    mainWindow:MainWindow = MainWindow()
-    mainWindow.show()
-
-    setWindow(mainWindow)
-
-    app.exec()
-
 if __name__ == "__main__":
-    main()
+    app:QApplication = QApplication(sys.argv)
+    mainWindow:MainWindow = MainWindow()
+    setWindow(mainWindow)
+    mainWindow.show()
+    if not repo():
+        change_repo()
+    app.exec()

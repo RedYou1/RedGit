@@ -1,4 +1,3 @@
-from genericpath import exists
 from git.diff import Diff
 from Global import *
 import difflib
@@ -12,16 +11,15 @@ class File():
         self.b_content:list[str] = b_content
 
     def Now(file:str):    
-        fileb = open(path+"\\"+file, "r")
+        fileb = open(path()+"\\"+file, "r")
         file2 = fileb.read().split('\n')
         fileb.close()
         return File(None,file,None,file2)
 
     def FromDiff(diff:Diff):
-
         file2:list[str] = None
-        if exists(path+"\\"+diff.b_path):
-            fileb = open(path+"\\"+diff.b_path, "r")
+        if exists(path()+"\\"+diff.b_path):
+            fileb = open(path()+"\\"+diff.b_path, "r")
             file2:list[str] = fileb.read().split('\n')
             fileb.close()
             

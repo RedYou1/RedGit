@@ -1,7 +1,4 @@
-from typing import Union
-from git.objects.base import Object
-from git.objects.commit import Commit
-from git.refs.reference import Reference
+from PyQt5 import QtGui
 from Global import *
 
 class GitLog(QScrollArea):
