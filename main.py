@@ -12,18 +12,25 @@ def change_repo():
             break
         except:
             pass
-    window().show()
-    window().main_win()
+    w = window()
+    w.show()
+    w.activateWindow()
+    w.main_win()
 
 class Instance(QWidget):
-    def __init__(self,path:str):
+    def __init__(self,p:str):
         super().__init__()
 
-        self.path:str = path
+        self.path:str = p
 
         layout:QHBoxLayout = QHBoxLayout()
 
-        layout.addWidget(QLabel(path))
+        label:QLabel = QLabel(p)
+        if self.path == path():
+            label.setStyleSheet("background-color: cyan;")
+        else:
+            label.setStyleSheet("background-color: lightgray;")
+        layout.addWidget(label)
 
         remove:QPushButton = QPushButton()
         remove.setCheckable(True)
@@ -33,9 +40,11 @@ class Instance(QWidget):
 
         self.setLayout(layout)
     
-    def remove(self, checked: bool = ...):
+    def remove(self, e):
         if removePath(self.path):
             change_repo()
+        else:
+            window().main_win()
 
     def mousePressEvent(self,e:QMouseEvent) -> None:
         setRepo(self.path)

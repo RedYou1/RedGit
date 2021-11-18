@@ -26,10 +26,13 @@ def removePath(path:str) -> bool:
     global mainWindow
     global pat
     global pats
-    pats.remove(path)
     if pat == path:
-        if len(pats) == 0:
+        if len(pats) <= 1:
+            pats = []
             return True
+        else:
+            pat = pats[pats.index(path)-1]
+    pats.remove(path)
     return False
 
 def repo() -> Repo:

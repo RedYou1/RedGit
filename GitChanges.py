@@ -32,6 +32,7 @@ class GitChanges(QWidget):
     selected:File = None
     def __init__(self):
         super().__init__()
+
         self.Refresh()
 
     def Refresh(self):
@@ -61,7 +62,7 @@ class GitChanges(QWidget):
         if self.layout():
             QWidget().setLayout(self.layout())
         self.setLayout(layout)
-    
+
     def actuText(self):
         if GitChanges.selected:
             name_file1:str = ""
@@ -75,10 +76,8 @@ class GitChanges(QWidget):
                 name_file2:str = GitChanges.selected.b_path
                 file2:list[str] = GitChanges.selected.b_content
             text:str = ""
-            for t in difflib.unified_diff(file1, file2,name_file1,name_file2):
-                text += t
-                if not t.endswith('\n'):
-                    text += '\n'
+            for t in difflib.unified_diff(a=file1, b=file2,fromfile=name_file1,tofile=name_file2,lineterm=''):
+                text += t + '\n'
             self.file.setText(text)
 
     def commit(self,e):
@@ -142,8 +141,8 @@ class GitFile(QWidget):
 
         self.setLayout(layout)
 
-        if GitChanges.selected and self.file == GitChanges.selected:
-            self.setStyleSheet("background-color: cyan;")
+        if GitChanges.selected and self.file.a_path == GitChanges.selected.a_path and self.file.b_path == GitChanges.selected.b_path:
+            label.setStyleSheet("background-color: cyan;")
     
     def stage(self,e):
         repo().git.add(self.file.b_path)
