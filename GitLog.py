@@ -1,91 +1,95 @@
+from typing import Union
+from git.objects.base import Object
+from git.objects.commit import Commit
+from git.refs.reference import Reference
 from Global import *
 
 class GitLog(QScrollArea):
 
-    lineHeight = 30
+    lineHeight:int = 30
 
     def __init__(self):
         super().__init__()
 
-        self.selected = ""
+        self.selected:str = ""
 
-        self.repo_commits = list(repo.iter_commits('--all'))
+        self.repo_commits:list[Commit] = list(repo().iter_commits('--all'))
 
-        self.view = QHBoxLayout()
+        self.view:QHBoxLayout = QHBoxLayout()
 
-        self.branchs = repo.refs
-        self.commits = {}
-        container = QWidget()
+        self.branchs:list[Reference] = repo().refs
+        self.commits:dict[str,Commit] = {}
+        container:QWidget = QWidget()
         container.setLayout(self.view)
         container.setFixedSize(1500,len(self.repo_commits)*GitLog.lineHeight)
         self.setWidget(container)
 
-        self.columns = []
-        self.branchs_commits = []
+        self.columns:list[list[Commit]] = []
+        self.branchs_commits:list[list[Commit]] = []
 
-        self.nom_heads = QVBoxLayout()
-        self.nom_commits = QVBoxLayout()
-        self.nom_authors = QVBoxLayout()
-        self.id_commits = QVBoxLayout()
+        self.nom_heads:QVBoxLayout = QVBoxLayout()
+        self.nom_commits:QVBoxLayout = QVBoxLayout()
+        self.nom_authors:QVBoxLayout = QVBoxLayout()
+        self.id_commits:QVBoxLayout = QVBoxLayout()
 
-        temp = self.branchs
-        if repo.head.is_detached:
-            temp.append(repo.head)
+        temp:list[Reference] = self.branchs
+        if repo().head.is_detached:
+            temp.append(repo().head)
 
         for branch in self.branchs:
-            col = []
-            commits = list(repo.iter_commits(rev=branch))
+            col:list[Commit] = []
+            commits:list[Commit] = list(repo().iter_commits(rev=branch))
             for com in commits:
                 col.append(com)
             if len(col) != 0:
                 self.columns.insert(0,branch)
                 self.branchs_commits.insert(0,col)
 
-        self.row = {}
+        self.row:dict[Union[int,str],list[Object]] = {}
 
-        max = 0
-        y = 0
+        max:int = 0
+        y:int = 0
         for com in self.repo_commits:
             if not com.hexsha in self.commits:
 
-                style = "border:1px solid black;"
+                style:str = "border:1px solid black;"
                 
                 if com.hexsha == self.selected:
                     style += "background-color: cyan;"
-                elif com.hexsha == repo.head.commit.hexsha:
+                elif com.hexsha == repo().head.commit.hexsha:
                     style += "background-color: lightgreen;"
 
 
-                temp = QHBoxLayout()
+                temp:QHBoxLayout = QHBoxLayout()
                 for i in range(len(self.columns)):
                     if com == self.branchs_commits[i][0]:
-                        t = QLabel(self.columns[i].name)
-                        tstyle = "border:hidden;"
-                        if (repo.head.is_detached and self.columns[i].name == "HEAD") or \
-                            (not repo.head.is_detached and self.columns[i] == repo.head.ref):
+                        t:QLabel = QLabel(self.columns[i].name)
+                        tstyle:str = "border:hidden;"
+                        if (repo().head.is_detached and self.columns[i].name == "HEAD") or \
+                            (not repo().head.is_detached and self.columns[i] == repo().head.ref):
                             tstyle += "font-weight: bold;"
                         t.setStyleSheet(tstyle)
                         temp.addWidget(t)
-                wid = QWidget()
+                wid:QWidget = QWidget()
                 wid.setLayout(temp)
                 wid.setFixedHeight(GitLog.lineHeight)
                 wid.setStyleSheet(style)
                 wid.mousePressEvent = self.commitMousePress
                 self.nom_heads.addWidget(wid)
-                temp = temp.count()
+                temp:int = temp.count()
                 if max < temp:
-                    max = temp
-                nom_commit = QLabel(com.message.split('\n')[0])
+                    max:int = temp
+                nom_commit:QLabel = QLabel(com.message.split('\n')[0])
                 nom_commit.setFixedHeight(GitLog.lineHeight)
                 nom_commit.setStyleSheet(style)
                 nom_commit.mousePressEvent = self.commitMousePress
                 self.nom_commits.addWidget(nom_commit)
-                author_name = QLabel(com.author.name)
+                author_name:QLabel = QLabel(com.author.name)
                 author_name.setFixedHeight(GitLog.lineHeight)
                 author_name.setStyleSheet(style)
                 author_name.mousePressEvent = self.commitMousePress
                 self.nom_authors.addWidget(author_name)
-                hex = QLabel(com.hexsha)
+                hex:QLabel = QLabel(com.hexsha)
                 hex.setFixedHeight(GitLog.lineHeight)
                 hex.setStyleSheet(style)
                 hex.mousePressEvent = self.commitMousePress
@@ -95,7 +99,7 @@ class GitLog(QScrollArea):
                 self.row[com.hexsha] = [y,wid,nom_commit,author_name,hex]
                 y+=1
 
-        self.cercle = self.Cercles(self)
+        self.cercle:self.Cercles = self.Cercles(self)
         self.view.addLayout(self.nom_heads)
         self.view.addWidget(self.cercle)
         self.view.addLayout(self.nom_commits)
@@ -103,34 +107,38 @@ class GitLog(QScrollArea):
         self.view.addLayout(self.id_commits)
 
     def contextMenuEvent(self, event):
-        if len(repo.index.diff(None)) == 0:
-            contextMenu = QMenu(self)
-            checkouts = []
-            checkout = contextMenu.addMenu("Checkout")
-            checkout_commit = checkout.addAction("this commit")
+        if len(repo().index.diff(None)) == 0:
+            contextMenu:QMenu = QMenu(self)
+            checkouts:list[QAction] = []
+            checkout:QMenu = contextMenu.addMenu("Checkout")
+            checkout_commit:QAction = checkout.addAction("this commit")
             for i in range(len(self.columns)):
-                if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo.branches:
+                if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo().branches:
                     checkouts.append(checkout.addAction(self.columns[i].name))
-            action = contextMenu.exec_(self.mapToGlobal(event.pos()))
-            w = window()
+            action:QAction = contextMenu.exec_(self.mapToGlobal(event.pos()))
+            w:QMainWindow = window()
             if action == checkout_commit:
-                repo.git.checkout(self.selected)
+                repo().git.checkout(self.selected)
                 w.main_win()
             if action in checkouts:
-                repo.git.checkout(action.text())
+                repo().git.checkout(action.text())
                 w.main_win()
+        else:
+            contextMenu:QMenu = QMenu(self)
+            contextMenu.addAction("Changes not staged")
+            contextMenu.exec_(self.mapToGlobal(event.pos()))
 
 
     def commitMousePress(self,e:QMouseEvent):
         if self.selected in self.row:
-            ele = self.row[self.selected]
+            ele:list[Object] = self.row[self.selected]
             for i in range(1,len(ele)):
-                style = "border:1px solid black;"
-                if self.selected == repo.head.commit.hexsha:
+                style:str = "border:1px solid black;"
+                if self.selected == repo().head.commit.hexsha:
                     style += "background-color: lightgreen;"
                 ele[i].setStyleSheet(style)
-        self.selected = self.row[int((e.globalY()-self.y()+self.verticalScrollBar().value())/GitLog.lineHeight)-1][0]
-        ele = self.row[self.selected]
+        self.selected:str = self.row[int((e.globalY()-self.y()+self.verticalScrollBar().value())/GitLog.lineHeight)-1][0]
+        ele:list[Object] = self.row[self.selected]
         for i in range(1,len(ele)):
             ele[i].setStyleSheet("border:1px solid black;background-color: cyan;")
         self.cercle.repaint()
@@ -139,13 +147,13 @@ class GitLog(QScrollArea):
         def __init__(self,log):
             super().__init__()
 
-            self.log = log
+            self.log:GitLog = log
 
-            self.commit = {}
-            y = 0
+            self.commit:dict[str,list[Object]] = {}
+            y:int = 0
             for com in self.log.repo_commits:
                 if not com.hexsha in self.log.commits:
-                    i = 0
+                    i:int = 0
                     for e in range(len(self.log.columns)):
                         if com in self.log.branchs_commits[e]:
                             i = e
@@ -155,19 +163,19 @@ class GitLog(QScrollArea):
 
         def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
             for com in self.commit:
-                commit = self.commit[com]
+                commit:list[Object] = self.commit[com]
                 commit[2] = QPoint(commit[2].x(),commit[1]*GitLog.lineHeight+GitLog.lineHeight/2)
             return super().resizeEvent(a0)
 
         def paintEvent(self,e):
-            qp = QPainter(self)
+            qp:QPainter = QPainter(self)
             for com in self.log.repo_commits:
                 if not com.hexsha in self.log.commits:
-                    a = False
+                    a:bool = False
                     if com.hexsha == self.log.selected:
                         a=True
                         qp.setBrush(QBrush(Qt.cyan))
-                    elif com.hexsha == repo.head.commit.hexsha:
+                    elif com.hexsha == repo().head.commit.hexsha:
                         a=True
                         qp.setBrush(QBrush(Qt.green))
                     qp.drawEllipse(self.commit[com.hexsha][2].x()-GitLog.lineHeight/4,self.commit[com.hexsha][2].y()-GitLog.lineHeight/4,GitLog.lineHeight/2,GitLog.lineHeight/2)
