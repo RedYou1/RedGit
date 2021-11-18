@@ -1,6 +1,5 @@
 from genericpath import exists
 from git.diff import Diff
-from GitLog import GitLog
 from Global import *
 import difflib
 import os
@@ -90,12 +89,12 @@ class GitChanges(QWidget):
 
 
 class GitFiles(QVBoxLayout):
-    def __init__(self,changes:GitLog,branch:str):
+    def __init__(self,changes:GitChanges,branch:str):
         super().__init__()
         
         staged:bool = branch != None
 
-        self.changes:GitLog = changes
+        self.changes:GitChanges = changes
         self.files:list[Diff] = [ item for item in repo().index.diff(branch) ]
 
         for file in self.files:
