@@ -13,11 +13,26 @@ class MainWindow(QMainWindow):
         mainLayout = QHBoxLayout()
         midLayout = QVBoxLayout()
 
+        topmidLayout = QHBoxLayout()
         actu = QPushButton()
         actu.setText("Actualiser")
         actu.setCheckable(True)
         actu.clicked.connect(self.actuBut)
-        midLayout.addWidget(actu)
+        topmidLayout.addWidget(actu)
+
+        actu = QPushButton()
+        actu.setText("Stash")
+        actu.setCheckable(True)
+        actu.clicked.connect(self.Stash)
+        topmidLayout.addWidget(actu)
+
+        actu = QPushButton()
+        actu.setText("UnStash")
+        actu.setCheckable(True)
+        actu.clicked.connect(self.UnStash)
+        topmidLayout.addWidget(actu)
+
+        midLayout.addLayout(topmidLayout)
 
         midLayout.addWidget(GitLog())
         midLayout.addWidget(GitChanges())
@@ -28,6 +43,15 @@ class MainWindow(QMainWindow):
 
     def actuBut(self,e):
         self.main_win()
+    
+    def Stash(self,e):
+        repo.git.stash('save')
+        self.main_win()
+
+    def UnStash(self,e):
+        repo.git.stash('pop')
+        self.main_win()
+
 
 def main():
     app = QApplication(sys.argv)

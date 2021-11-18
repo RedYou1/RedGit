@@ -2,6 +2,7 @@ from genericpath import exists
 from git.diff import Diff
 from Global import *
 import difflib
+import os
 
 class GitChanges(QWidget):
     selected = ""
@@ -18,9 +19,27 @@ class GitChanges(QWidget):
         self.staged.setLayout(GitFiles(self,'HEAD'))
         layout.addWidget(self.staged)
 
+        
+        temp = QVBoxLayout()
+        layout.addLayout(temp)
+        self.message = QLineEdit()
+        temp.addWidget(self.message)
+        self.file = QTextEdit()
+        temp.addWidget(self.file)
+        self.actuText()
+
+        but = QPushButton()
+        but.setText("Commit")
+        but.setCheckable(True)
+        but.clicked.connect(self.commit)
+        temp.addWidget(but)
+
+        if self.layout():
+            QWidget().setLayout(self.layout())
+        self.setLayout(layout)
+    
+    def actuText(self):
         if GitChanges.selected:
-            file = QTextEdit()
-            layout.addWidget(file)
             name_file1 = ""
             name_file2 = ""
             file1 = []
@@ -36,43 +55,89 @@ class GitChanges(QWidget):
                 text += t
                 if not t.endswith('\n'):
                     text += '\n'
-            file.setText(text)
+            self.file.setText(text)
 
-        if self.layout():
-            QWidget().setLayout(self.layout())
-        self.setLayout(layout)
+    def commit(self,e):
+        repo.git.commit(self.message.text(),m=True)
+        window().main_win()
 
 
 class GitFiles(QVBoxLayout):
     def __init__(self,changes,branch):
         super().__init__()
         
+        staged = branch != None
+
         self.changes = changes
         self.files = [ item for item in repo.index.diff(branch) ]
 
         for file in self.files:
-            self.addWidget(GitFile(self,File.FromDiff(file)))
+            self.addWidget(GitFile(self,File.FromDiff(file),staged))
         
-        if branch == None:
+        if not staged:
             for file in repo.untracked_files:
-                self.addWidget(GitFile(self,File.Now(file)))
+                self.addWidget(GitFile(self,File.Now(file),False))
 
 
-class GitFile(QLabel):
-    def __init__(self,files,file):
+class GitFile(QWidget):
+    def __init__(self,files,file,staged):
         super().__init__()
+
+        self.staged = staged
+        layout = QHBoxLayout()
+        label = QLabel()
 
         self.files = files
         self.file = file
 
         if self.file.b_path:
-            self.setText(self.file.b_path)
+            label.setText(self.file.b_path)
         else:
-            self.setText(self.file.a_path)
+            label.setText(self.file.a_path)
+
+        layout.addWidget(label)
+
+        remove = QPushButton()
+        remove.setText("X")
+        remove.setCheckable(True)
+        remove.clicked.connect(self.removed)
+        layout.addWidget(remove)
+
+        if staged:
+            s = QPushButton()
+            s.setText("<")
+            s.setCheckable(True)
+            s.clicked.connect(self.unStage)
+            layout.addWidget(s)
+        else:
+            s = QPushButton()
+            s.setText(">")
+            s.setCheckable(True)
+            s.clicked.connect(self.stage)
+            layout.addWidget(s)
+
+        self.setLayout(layout)
 
         if GitChanges.selected and self.file == GitChanges.selected:
             self.setStyleSheet("background-color: cyan;")
     
+    def stage(self,e):
+        repo.git.add(self.file.b_path)
+        self.files.changes.Refresh()
+
+    def unStage(self,e):
+        repo.git.restore(self.file.b_path,staged=True)
+        self.files.changes.Refresh()
+
+    def removed(self,e):
+        if self.staged:
+            self.unStage(None)
+        if self.file.b_path in repo.untracked_files:
+            os.remove(path+"\\"+self.file.b_path)
+        else:
+            repo.git.restore(self.file.b_path)
+        self.files.changes.Refresh()
+
     def mousePressEvent(self,e:QMouseEvent):
         GitChanges.selected = self.file
         self.files.changes.Refresh()
@@ -98,5 +163,8 @@ class File():
             file2 = fileb.read().split('\n')
             fileb.close()
             
-        return File(diff.a_path,diff.b_path,diff.a_blob.data_stream.read().decode('utf-8').split('\n'),file2)
+        a_blob = ""
+        if diff.a_blob:
+            a_blob = diff.a_blob.data_stream.read().decode('utf-8').split('\n')
+        return File(diff.a_path,diff.b_path,a_blob,file2)
 

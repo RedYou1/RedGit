@@ -103,21 +103,22 @@ class GitLog(QScrollArea):
         self.view.addLayout(self.id_commits)
 
     def contextMenuEvent(self, event):
-        contextMenu = QMenu(self)
-        checkout = contextMenu.addMenu("Checkout")
-        checkout_commit = checkout.addAction("this commit")
-        checkouts = []
-        for i in range(len(self.columns)):
-            if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo.branches:
-                checkouts.append(checkout.addAction(self.columns[i].name))
-        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
-        w = window()
-        if action == checkout_commit:
-            repo.git.checkout(self.selected)
-            w.main_win()
-        if action in checkouts:
-            repo.git.checkout(action.text())
-            w.main_win()
+        if len(repo.index.diff(None)) == 0:
+            contextMenu = QMenu(self)
+            checkouts = []
+            checkout = contextMenu.addMenu("Checkout")
+            checkout_commit = checkout.addAction("this commit")
+            for i in range(len(self.columns)):
+                if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo.branches:
+                    checkouts.append(checkout.addAction(self.columns[i].name))
+            action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+            w = window()
+            if action == checkout_commit:
+                repo.git.checkout(self.selected)
+                w.main_win()
+            if action in checkouts:
+                repo.git.checkout(action.text())
+                w.main_win()
 
 
     def commitMousePress(self,e:QMouseEvent):
