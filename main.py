@@ -7,11 +7,15 @@ def change_repo():
     window().hide()
     while True:
         string = easygui.diropenbox()
+        if string == None:
+            break
         try:
             setRepo(string)
             break
         except:
             pass
+    if len(paths()) == 0:
+        sys.exit()
     w = window()
     w.show()
     w.activateWindow()
