@@ -1,32 +1,6 @@
-from git.diff import Diff
 from Global import *
 import difflib
 import os
-
-class File():
-    def __init__(self,a_path:str,b_path:str,a_content:list[str],b_content:list[str]):
-        self.a_path:str = a_path
-        self.b_path:str = b_path
-        self.a_content:list[str] = a_content
-        self.b_content:list[str] = b_content
-
-    def Now(file:str):    
-        fileb = open(path()+"\\"+file, "r")
-        file2 = fileb.read().split('\n')
-        fileb.close()
-        return File(None,file,None,file2)
-
-    def FromDiff(diff:Diff):
-        file2:list[str] = None
-        if exists(path()+"\\"+diff.b_path):
-            fileb = open(path()+"\\"+diff.b_path, "r")
-            file2:list[str] = fileb.read().split('\n')
-            fileb.close()
-            
-        a_blob:list[str] = [""]
-        if diff.a_blob:
-            a_blob:list[str] = diff.a_blob.data_stream.read().decode('utf-8').split('\n')
-        return File(diff.a_path,diff.b_path,a_blob,file2)
 
 class GitChanges(QWidget):
     selected:File = None
@@ -82,7 +56,7 @@ class GitChanges(QWidget):
 
     def commit(self,e):
         repo().git.commit(self.message.text(),m=True)
-        window().main_win()
+        window().Refresh()
 
 
 class GitFiles(QVBoxLayout):

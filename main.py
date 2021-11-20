@@ -1,4 +1,5 @@
 from Global import *
+from Merge import *
 from GitLog import *
 from GitChanges import *
 import easygui
@@ -19,7 +20,7 @@ def change_repo():
     w = window()
     w.show()
     w.activateWindow()
-    w.main_win()
+    w.Refresh()
 
 class Instance(QWidget):
     def __init__(self,p:str):
@@ -58,10 +59,26 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("RedGit")
-        if repo():
-            self.main_win()
+        self.Refresh()
         self.showMaximized()
     
+    def Refresh(self):
+        if repo():
+            diff:str = repo().git.diff(name_only=True,diff_filter='U')
+            if diff != "":
+                self.merge_win(diff.split('\n'))
+            else:
+                self.main_win()
+
+    def merge_win(self,diff:list[str]):
+        mainLayout:QVBoxLayout = QVBoxLayout()
+
+        mainLayout.addWidget(MergeLayout(diff))
+
+        container:QWidget = QWidget()
+        container.setLayout(mainLayout)
+        self.setCentralWidget(container)
+
     def main_win(self):
         mainLayout:QHBoxLayout = QHBoxLayout()
 

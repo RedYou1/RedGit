@@ -116,10 +116,10 @@ class GitLog(QScrollArea):
             w:QMainWindow = window()
             if action == checkout_commit:
                 repo().git.checkout(self.selected)
-                w.main_win()
+                w.Refresh()
             if action in checkouts:
                 repo().git.checkout(action.text())
-                w.main_win()
+                w.Refresh()
         else:
             contextMenu:QMenu = QMenu(self)
             contextMenu.addAction("Changes not staged")
