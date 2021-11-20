@@ -106,12 +106,20 @@ class GitLog(QScrollArea):
     def contextMenuEvent(self, event):
         if len(repo().index.diff(None)) == 0:
             contextMenu:QMenu = QMenu(self)
+            
             checkouts:list[QAction] = []
             checkout:QMenu = contextMenu.addMenu("Checkout")
             checkout_commit:QAction = checkout.addAction("this commit")
             for i in range(len(self.columns)):
                 if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo().branches:
                     checkouts.append(checkout.addAction(self.columns[i].name))
+            
+            merges:list[QAction] = []
+            merge:QMenu = contextMenu.addMenu("Merge")
+            for i in range(len(self.columns)):
+                if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo().branches:
+                    merges.append(merge.addAction(self.columns[i].name))
+            
             action:QAction = contextMenu.exec_(self.mapToGlobal(event.pos()))
             w:QMainWindow = window()
             if action == checkout_commit:
@@ -119,6 +127,12 @@ class GitLog(QScrollArea):
                 w.Refresh()
             if action in checkouts:
                 repo().git.checkout(action.text())
+                w.Refresh()
+            if action in merges:
+                try:
+                    repo().git.merge(action.text())
+                except Exception:
+                    pass
                 w.Refresh()
         else:
             contextMenu:QMenu = QMenu(self)

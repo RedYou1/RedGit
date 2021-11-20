@@ -50,15 +50,13 @@ class MergeLayout(QWidget):
         abort.clicked.connect(self.abort)
         buttons.addWidget(abort)
 
-        layout.addLayout(buttons)
+        validate:QPushButton = QPushButton()
+        validate.setText("Validate")
+        validate.setCheckable(True)
+        validate.clicked.connect(self.validate)
+        buttons.addWidget(validate)
 
-        self.commitName:QLineEdit = QLineEdit()
-        layout.addWidget(self.commitName)
-        commitBut:QPushButton = QPushButton()
-        commitBut.setText("Commit")
-        commitBut.setCheckable(True)
-        commitBut.clicked.connect(self.commit)
-        layout.addWidget(commitBut)
+        layout.addLayout(buttons)
 
 
         if self.layout():
@@ -70,8 +68,8 @@ class MergeLayout(QWidget):
         file.write(self.final.toPlainText())
         file.close()
 
-    def commit(self,e):
-        repo().git.merge(self.commitName)
+    def validate(self,e):
+        repo().git.add(self.selected)
         window().Refresh()
 
     def changeFile(self,e):
