@@ -122,6 +122,24 @@ class GitLog(QScrollArea):
                 if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo().branches:
                     merges.append(merge.addAction(self.columns[i].name))
             
+            pushs:list[QAction] = []
+            if not repo().head.is_detached and self.selected == repo().active_branch.commit.hexsha:
+                lenOfRemotes:int = len(repo().remotes)
+                if lenOfRemotes > 0:
+                    push:QMenu = contextMenu.addMenu("Pushes")
+                    for remote in repo().remotes:
+                        pushs.append(push.addAction(remote.name))
+
+            pulls:list[QAction] = []
+            if not repo().head.is_detached:
+                lenOfRemotes:int = len(repo().remotes)
+                if lenOfRemotes > 0:
+                    push:QMenu = contextMenu.addMenu("Pulls")
+                    for remote in repo().remotes:
+                        r:QMenu = push.addMenu(remote.name)
+                        for branch in remote.refs:
+                            pulls.append(r.addAction(branch.name.split('/')[1]))
+
             action:QAction = contextMenu.exec_(self.mapToGlobal(event.pos()))
             w:QMainWindow = window()
             if action == checkout_commit:
@@ -133,6 +151,17 @@ class GitLog(QScrollArea):
             if action in merges:
                 try:
                     repo().git.merge(action.text())
+                except Exception:
+                    pass
+                w.Refresh()
+            
+            if action in pushs:
+                repo().git.push(action.text(),repo().active_branch.name)
+                w.Refresh()
+
+            if action in pulls:
+                try:
+                    repo().git.pull(action.parent().title(),action.text())
                 except Exception:
                     pass
                 w.Refresh()
