@@ -195,6 +195,24 @@ class GitLog(QScrollArea):
                     if a:
                         qp.setBrush(QBrush())
                 for parent in com.parents:
-                    qp.drawLine(self.commit[com.hexsha][2].x(),self.commit[com.hexsha][2].y(),
-                        self.commit[parent.hexsha][2].x(),self.commit[parent.hexsha][2].y())
+                    x1 = self.commit[parent.hexsha][2].x()
+                    y1 = self.commit[parent.hexsha][2].y()
+                    x2 = self.commit[com.hexsha][2].x()
+                    y2 = self.commit[com.hexsha][2].y()
+
+                    if x1 < x2:
+                        qp.drawLine(x1,y1,x2-GitLog.lineHeight/2,y1)
+                        qp.drawLine(x2,y1-GitLog.lineHeight/2,x2,y2)
+                        qp.drawArc(x2-GitLog.lineHeight,y1-GitLog.lineHeight,
+                            GitLog.lineHeight,GitLog.lineHeight,
+                            270*16,90*16)
+                    elif x1 > x2:
+                        qp.drawLine(x1,y1,x2+GitLog.lineHeight/2,y1)
+                        qp.drawLine(x2,y2,x2,y1+GitLog.lineHeight/2)
+                        qp.drawArc(x2,y1-GitLog.lineHeight,
+                            GitLog.lineHeight,GitLog.lineHeight,
+                            270*16,-90*16)
+                    else:
+                        qp.drawLine(x1,y1,x2,y2)
+
             qp.end()
