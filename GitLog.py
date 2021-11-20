@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from PyQt5 import QtGui
 from Global import *
 
@@ -10,7 +11,7 @@ class GitLog(QScrollArea):
 
         self.selected:str = ""
 
-        self.repo_commits:list[Commit] = list(repo().iter_commits('--all'))
+        self.repo_commits:list[Commit] = list(repo().iter_commits(all=True))
 
         self.view:QHBoxLayout = QHBoxLayout()
 
@@ -33,14 +34,15 @@ class GitLog(QScrollArea):
         if repo().head.is_detached:
             temp.append(repo().head)
 
-        for branch in self.branchs:
-            col:list[Commit] = []
-            commits:list[Commit] = list(repo().iter_commits(rev=branch))
-            for com in commits:
-                col.append(com)
-            if len(col) != 0:
-                self.columns.insert(0,branch)
-                self.branchs_commits.insert(0,col)
+        temp2:list[Tuple[datetime,list[Commit]]] = []
+        for b in self.branchs:
+            temp2.append((b.commit.committed_datetime,b))
+        def takeFirst(ele):
+            return ele[0]
+        temp2.sort(key=takeFirst,reverse=True)
+        for branch in temp2:
+            self.columns.append(branch[1])
+            self.branchs_commits.append(list(repo().iter_commits(rev=branch[1],first_parent=True)))
 
         self.row:dict[Union[int,str],list[Object]] = {}
 
