@@ -1,5 +1,6 @@
 from Global import *
 from Merge import *
+from Remote import *
 from GitLog import *
 from GitChanges import *
 import easygui
@@ -58,6 +59,7 @@ class Instance(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.selected = self.main_win
         self.setWindowTitle("RedGit")
         self.Refresh()
         self.showMaximized()
@@ -66,9 +68,19 @@ class MainWindow(QMainWindow):
         if repo():
             diff:str = repo().git.diff(name_only=True,diff_filter='U')
             if diff != "":
+                self.selected = self.main_win
                 self.merge_win(diff.split('\n'))
             else:
-                self.main_win()
+                self.selected()
+
+    def remotes_win(self):
+        mainLayout:QVBoxLayout = QVBoxLayout()
+
+        mainLayout.addLayout(RemoteLayout(self))
+
+        container:QWidget = QWidget()
+        container.setLayout(mainLayout)
+        self.setCentralWidget(container)
 
     def merge_win(self,diff:list[str]):
         mainLayout:QVBoxLayout = QVBoxLayout()
@@ -115,6 +127,12 @@ class MainWindow(QMainWindow):
         actu.clicked.connect(self.UnStash)
         topmidLayout.addWidget(actu)
 
+        actu:QPushButton = QPushButton()
+        actu.setText("Remotes")
+        actu.setCheckable(True)
+        actu.clicked.connect(self.SetRemotes)
+        topmidLayout.addWidget(actu)
+
         midLayout.addLayout(topmidLayout)
 
         midLayout.addWidget(GitLog())
@@ -124,8 +142,16 @@ class MainWindow(QMainWindow):
         container.setLayout(mainLayout)
         self.setCentralWidget(container)
 
+    def SetMain(self,e):
+        self.selected = self.main_win
+        self.Refresh()
+
+    def SetRemotes(self,e):
+        self.selected = self.remotes_win
+        self.Refresh()
+
     def actuBut(self,e):
-        self.main_win()
+        self.Refresh()
     
     def Stash(self,e):
         repo().git.stash('save')

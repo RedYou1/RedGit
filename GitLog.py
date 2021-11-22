@@ -116,11 +116,9 @@ class GitLog(QScrollArea):
                 if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo().branches:
                     checkouts.append(checkout.addAction(self.columns[i].name))
             
-            merges:list[QAction] = []
-            merge:QMenu = contextMenu.addMenu("Merge")
-            for i in range(len(self.columns)):
-                if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo().branches:
-                    merges.append(merge.addAction(self.columns[i].name))
+            createBranch:QAction = contextMenu.addAction("Create Branch")
+
+            merge:QAction = contextMenu.addAction("Merge")
             
             pushs:list[QAction] = []
             if not repo().head.is_detached and self.selected == repo().active_branch.commit.hexsha:
@@ -138,19 +136,41 @@ class GitLog(QScrollArea):
                     for remote in repo().remotes:
                         r:QMenu = push.addMenu(remote.name)
                         for branch in remote.refs:
-                            pulls.append(r.addAction(branch.name.split('/')[1]))
+                            if branch.is_detached and branch.commit.hexsha == self.selected:
+                                pulls.append(r.addAction(branch.name.split('/')[1]))
 
             action:QAction = contextMenu.exec_(self.mapToGlobal(event.pos()))
             w:QMainWindow = window()
             if action == checkout_commit:
                 repo().git.checkout(self.selected)
                 w.Refresh()
+            if action == createBranch:
+                self.msg:QWidget = QWidget()
+                self.msg.setWindowTitle("Create Branch")
+                v:QVBoxLayout = QVBoxLayout() 
+                v.addWidget(QLabel("Name of the new branch:"))
+                self.newBranchName:QLineEdit = QLineEdit()
+                v.addWidget(self.newBranchName)
+                h:QHBoxLayout = QHBoxLayout()
+                cancel:QPushButton = QPushButton()
+                cancel.setText("Cancel")
+                cancel.setCheckable(True)
+                cancel.clicked.connect(self.msg.close)
+                h.addWidget(cancel)
+                create:QPushButton = QPushButton()
+                create.setText("Create")
+                create.setCheckable(True)
+                create.clicked.connect(self.createNewBranch)
+                h.addWidget(create)
+                v.addLayout(h)
+                self.msg.setLayout(v)
+                self.msg.show()
             if action in checkouts:
                 repo().git.checkout(action.text())
                 w.Refresh()
-            if action in merges:
+            if action == merge:
                 try:
-                    repo().git.merge(action.text())
+                    repo().git.merge(self.selected)
                 except Exception:
                     pass
                 w.Refresh()
@@ -169,6 +189,14 @@ class GitLog(QScrollArea):
             contextMenu:QMenu = QMenu(self)
             contextMenu.addAction("Changes not staged")
             contextMenu.exec_(self.mapToGlobal(event.pos()))
+
+    def createNewBranch(self,e):
+        if len(self.newBranchName.text()) > 0:
+            repo().git.checkout(self.selected)
+            repo().git.branch(self.newBranchName.text())
+            repo().git.checkout(self.newBranchName.text())
+            self.msg.close()
+            window().Refresh()
 
 
     def commitMousePress(self,e:QMouseEvent):
