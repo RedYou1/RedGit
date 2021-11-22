@@ -12,11 +12,11 @@ def change_repo():
         if string == None:
             break
         try:
-            setRepo(string)
+            setInstance(string)
             break
         except:
             pass
-    if len(paths()) == 0:
+    if len(instances()) == 0:
         sys.exit()
     w = window()
     w.show()
@@ -32,7 +32,7 @@ class Instance(QWidget):
         layout:QHBoxLayout = QHBoxLayout()
 
         label:QLabel = QLabel(p)
-        if self.path == path():
+        if self.path == getInstance():
             label.setStyleSheet("background-color: cyan;")
         else:
             label.setStyleSheet("background-color: lightgray;")
@@ -47,13 +47,13 @@ class Instance(QWidget):
         self.setLayout(layout)
     
     def remove(self, e):
-        if removePath(self.path):
+        if removeInstance(self.path):
             change_repo()
         else:
             window().main_win()
 
     def mousePressEvent(self,e:QMouseEvent) -> None:
-        setRepo(self.path)
+        setInstance(self.path)
         window().main_win()
 
 class MainWindow(QMainWindow):
@@ -61,7 +61,6 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.selected = self.main_win
         self.setWindowTitle("RedGit")
-        self.Refresh()
         self.showMaximized()
     
     def Refresh(self):
@@ -97,7 +96,7 @@ class MainWindow(QMainWindow):
         midLayout:QVBoxLayout = QVBoxLayout()
 
         topLayout:QHBoxLayout = QHBoxLayout()
-        for path in paths():
+        for path in instances():
             topLayout.addWidget(Instance(path))
         
         add = QPushButton()
@@ -166,6 +165,10 @@ if __name__ == "__main__":
     mainWindow:MainWindow = MainWindow()
     setWindow(mainWindow)
     mainWindow.show()
-    if not repo():
+    ins = getInstance()
+    if ins != None:
+        setInstance(ins)
+        mainWindow.Refresh()
+    else:
         change_repo()
     app.exec()
