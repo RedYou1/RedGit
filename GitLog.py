@@ -118,6 +118,17 @@ class GitLog(QScrollArea):
             
             createBranch:QAction = contextMenu.addAction("Create Branch")
 
+            delBranchs:list[str] = []
+            for b in repo().branches:
+                if b.is_detached and b.commit.hexsha == self.selected:
+                    delBranchs.append(b.name)
+
+            delBranchActs:list[QAction] = []
+            if len(delBranchs) > 0:
+                delBranch:QMenu = contextMenu.addMenu("Delete Branch")
+                for a in delBranchs:
+                    delBranchActs.append(delBranch.addAction(a))
+
             merge:QAction = contextMenu.addAction("Merge")
             
             pushs:list[QAction] = []
@@ -165,6 +176,11 @@ class GitLog(QScrollArea):
                 v.addLayout(h)
                 self.msg.setLayout(v)
                 self.msg.show()
+            if action in delBranchActs:
+                if not repo().head.is_detached and action.text() == repo().active_branch.name:
+                    repo().git.checkout(repo().head.commit.hexsha)
+                repo().git.branch(action.text(),D=True)
+                window().Refresh()
             if action in checkouts:
                 repo().git.checkout(action.text())
                 w.Refresh()
