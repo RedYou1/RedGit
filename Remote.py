@@ -71,6 +71,7 @@ class RemoteLayout(QVBoxLayout):
                 self.remote:Remote = remote
 
                 self.urls:list[QLineEdit] = []
+                self.name = None
                 self.setWindowTitle("Edit Remote")
                 self.Refresh()
 
@@ -79,10 +80,11 @@ class RemoteLayout(QVBoxLayout):
 
                 layout2:QHBoxLayout = QHBoxLayout()
 
-                if self.remote != None:
-                    self.name:QLineEdit = QLineEdit(self.remote.name)
-                else:
-                    self.name:QLineEdit = QLineEdit()
+                if self.name == None:
+                    if self.remote != None:
+                        self.name:QLineEdit = QLineEdit(self.remote.name)
+                    else:
+                        self.name:QLineEdit = QLineEdit()
                 layout2.addWidget(self.name)
 
                 
