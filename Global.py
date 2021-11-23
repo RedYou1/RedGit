@@ -115,6 +115,7 @@ class Setting():
                 return True
             lines.insert(lines.index("Instance:"+instance+'\n'),"Instance:"+ins[0])
             lines.remove("Instance:"+instance+'\n')
+            Setting.__instance = ins[0].removesuffix('\n')
         file = open(Setting.file_setting,'w')
         file.writelines(lines)
         file.close()
