@@ -55,8 +55,8 @@ class GitChanges(QWidget):
             self.file.setText(text)
 
     def commit(self,e):
-        repo().git.commit(self.message.text(),m=True)
-        window().Refresh()
+        Setting.repo.git.commit(self.message.text(),m=True)
+        Setting.window.Refresh()
 
 
 class GitFiles(QVBoxLayout):
@@ -66,13 +66,13 @@ class GitFiles(QVBoxLayout):
         staged:bool = branch != None
 
         self.changes:GitChanges = changes
-        self.files:list[Diff] = [ item for item in repo().index.diff(branch) ]
+        self.files:list[Diff] = [ item for item in Setting.repo.index.diff(branch) ]
 
         for file in self.files:
             self.addWidget(GitFile(self,File.FromDiff(file),staged))
         
         if not staged:
-            for file in repo().untracked_files:
+            for file in Setting.repo.untracked_files:
                 self.addWidget(GitFile(self,File.Now(file),False))
 
 
@@ -119,20 +119,20 @@ class GitFile(QWidget):
             label.setStyleSheet("background-color: cyan;")
     
     def stage(self,e):
-        repo().git.add(self.file.b_path)
+        Setting.repo.git.add(self.file.b_path)
         self.files.changes.Refresh()
 
     def unStage(self,e):
-        repo().git.restore(self.file.b_path,staged=True)
+        Setting.repo.git.restore(self.file.b_path,staged=True)
         self.files.changes.Refresh()
 
     def removed(self,e):
         if self.staged:
             self.unStage(None)
-        if self.file.b_path in repo().untracked_files:
-            os.remove(path+"\\"+self.file.b_path)
+        if self.file.b_path in Setting.repo.untracked_files:
+            os.remove(Setting.getInstance()+"\\"+self.file.b_path)
         else:
-            repo().git.restore(self.file.b_path)
+            Setting.repo.git.restore(self.file.b_path)
         self.files.changes.Refresh()
 
     def mousePressEvent(self,e:QMouseEvent):

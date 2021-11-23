@@ -11,11 +11,11 @@ class GitLog(QScrollArea):
 
         self.selected:str = ""
 
-        self.repo_commits:list[Commit] = list(repo().iter_commits(all=True))
+        self.repo_commits:list[Commit] = list(Setting.repo.iter_commits(all=True))
 
         self.view:QHBoxLayout = QHBoxLayout()
 
-        self.branchs:list[Reference] = repo().refs
+        self.branchs:list[Reference] = Setting.repo.refs
         self.commits:dict[str,Commit] = {}
         container:QWidget = QWidget()
         container.setLayout(self.view)
@@ -31,8 +31,8 @@ class GitLog(QScrollArea):
         self.id_commits:QVBoxLayout = QVBoxLayout()
 
         temp:list[Reference] = self.branchs
-        if repo().head.is_detached:
-            temp.append(repo().head)
+        if Setting.repo.head.is_detached:
+            temp.append(Setting.repo.head)
 
         temp2:list[Tuple[datetime,list[Commit]]] = []
         for b in self.branchs:
@@ -42,7 +42,7 @@ class GitLog(QScrollArea):
         temp2.sort(key=takeFirst,reverse=True)
         for branch in temp2:
             self.columns.append(branch[1])
-            self.branchs_commits.append(list(repo().iter_commits(rev=branch[1],first_parent=True)))
+            self.branchs_commits.append(list(Setting.repo.iter_commits(rev=branch[1],first_parent=True)))
 
         self.row:dict[Union[int,str],list[Object]] = {}
 
@@ -55,7 +55,7 @@ class GitLog(QScrollArea):
                 
                 if com.hexsha == self.selected:
                     style += "background-color: cyan;"
-                elif com.hexsha == repo().head.commit.hexsha:
+                elif com.hexsha == Setting.repo.head.commit.hexsha:
                     style += "background-color: lightgreen;"
 
 
@@ -64,8 +64,8 @@ class GitLog(QScrollArea):
                     if com == self.branchs_commits[i][0]:
                         t:QLabel = QLabel(self.columns[i].name)
                         tstyle:str = "border:hidden;"
-                        if (repo().head.is_detached and self.columns[i].name == "HEAD") or \
-                            (not repo().head.is_detached and self.columns[i] == repo().head.ref):
+                        if (Setting.repo.head.is_detached and self.columns[i].name == "HEAD") or \
+                            (not Setting.repo.head.is_detached and self.columns[i] == Setting.repo.head.ref):
                             tstyle += "font-weight: bold;"
                         t.setStyleSheet(tstyle)
                         temp.addWidget(t)
@@ -106,20 +106,20 @@ class GitLog(QScrollArea):
         self.view.addLayout(self.id_commits)
 
     def contextMenuEvent(self, event):
-        if len(repo().index.diff(None)) == 0:
+        if len(Setting.repo.index.diff(None)) == 0:
             contextMenu:QMenu = QMenu(self)
             
             checkouts:list[QAction] = []
             checkout:QMenu = contextMenu.addMenu("Checkout")
             checkout_commit:QAction = checkout.addAction("this commit")
             for i in range(len(self.columns)):
-                if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in repo().branches:
+                if self.selected == self.branchs_commits[i][0].hexsha and self.columns[i].name != "HEAD" and self.columns[i] in Setting.repo.branches:
                     checkouts.append(checkout.addAction(self.columns[i].name))
             
             createBranch:QAction = contextMenu.addAction("Create Branch")
 
             delBranchs:list[str] = []
-            for b in repo().branches:
+            for b in Setting.repo.branches:
                 if b.is_detached and b.commit.hexsha == self.selected:
                     delBranchs.append(b.name)
 
@@ -132,29 +132,28 @@ class GitLog(QScrollArea):
             merge:QAction = contextMenu.addAction("Merge")
             
             pushs:list[QAction] = []
-            if not repo().head.is_detached and self.selected == repo().active_branch.commit.hexsha:
-                lenOfRemotes:int = len(repo().remotes)
+            if not Setting.repo.head.is_detached and self.selected == Setting.repo.active_branch.commit.hexsha:
+                lenOfRemotes:int = len(Setting.repo.remotes)
                 if lenOfRemotes > 0:
                     push:QMenu = contextMenu.addMenu("Pushes")
-                    for remote in repo().remotes:
+                    for remote in Setting.repo.remotes:
                         pushs.append(push.addAction(remote.name))
 
             pulls:list[QAction] = []
-            if not repo().head.is_detached:
-                lenOfRemotes:int = len(repo().remotes)
+            if not Setting.repo.head.is_detached:
+                lenOfRemotes:int = len(Setting.repo.remotes)
                 if lenOfRemotes > 0:
                     push:QMenu = contextMenu.addMenu("Pulls")
-                    for remote in repo().remotes:
+                    for remote in Setting.repo.remotes:
                         r:QMenu = push.addMenu(remote.name)
                         for branch in remote.refs:
                             if branch.is_detached and branch.commit.hexsha == self.selected:
                                 pulls.append(r.addAction(branch.name.split('/')[1]))
 
             action:QAction = contextMenu.exec_(self.mapToGlobal(event.pos()))
-            w:QMainWindow = window()
             if action == checkout_commit:
-                repo().git.checkout(self.selected)
-                w.Refresh()
+                Setting.repo.git.checkout(self.selected)
+                Setting.window.Refresh()
             if action == createBranch:
                 self.msg:QWidget = QWidget()
                 self.msg.setWindowTitle("Create Branch")
@@ -177,30 +176,30 @@ class GitLog(QScrollArea):
                 self.msg.setLayout(v)
                 self.msg.show()
             if action in delBranchActs:
-                if not repo().head.is_detached and action.text() == repo().active_branch.name:
-                    repo().git.checkout(repo().head.commit.hexsha)
-                repo().git.branch(action.text(),D=True)
-                window().Refresh()
+                if not Setting.repo.head.is_detached and action.text() == Setting.repo.active_branch.name:
+                    Setting.repo.git.checkout(Setting.repo.head.commit.hexsha)
+                Setting.repo.git.branch(action.text(),D=True)
+                Setting.window.Refresh()
             if action in checkouts:
-                repo().git.checkout(action.text())
-                w.Refresh()
+                Setting.repo.git.checkout(action.text())
+                Setting.window.Refresh()
             if action == merge:
                 try:
-                    repo().git.merge(self.selected)
+                    Setting.repo.git.merge(self.selected)
                 except Exception:
                     pass
-                w.Refresh()
+                Setting.window.Refresh()
             
             if action in pushs:
-                repo().git.push(action.text(),repo().active_branch.name)
-                w.Refresh()
+                Setting.repo.git.push(action.text(),Setting.repo.active_branch.name)
+                Setting.window.Refresh()
 
             if action in pulls:
                 try:
-                    repo().git.pull(action.parent().title(),action.text())
+                    Setting.repo.git.pull(action.parent().title(),action.text())
                 except Exception:
                     pass
-                w.Refresh()
+                Setting.window.Refresh()
         else:
             contextMenu:QMenu = QMenu(self)
             contextMenu.addAction("Changes not staged")
@@ -208,11 +207,11 @@ class GitLog(QScrollArea):
 
     def createNewBranch(self,e):
         if len(self.newBranchName.text()) > 0:
-            repo().git.checkout(self.selected)
-            repo().git.branch(self.newBranchName.text())
-            repo().git.checkout(self.newBranchName.text())
+            Setting.repo.git.checkout(self.selected)
+            Setting.repo.git.branch(self.newBranchName.text())
+            Setting.repo.git.checkout(self.newBranchName.text())
             self.msg.close()
-            window().Refresh()
+            Setting.window.Refresh()
 
 
     def commitMousePress(self,e:QMouseEvent):
@@ -220,7 +219,7 @@ class GitLog(QScrollArea):
             ele:list[Object] = self.row[self.selected]
             for i in range(1,len(ele)):
                 style:str = "border:1px solid black;"
-                if self.selected == repo().head.commit.hexsha:
+                if self.selected == Setting.repo.head.commit.hexsha:
                     style += "background-color: lightgreen;"
                 ele[i].setStyleSheet(style)
         self.selected:str = self.row[int((e.globalY()-self.y()+self.verticalScrollBar().value())/GitLog.lineHeight)-1][0]
@@ -261,7 +260,7 @@ class GitLog(QScrollArea):
                     if com.hexsha == self.log.selected:
                         a=True
                         qp.setBrush(QBrush(Qt.cyan))
-                    elif com.hexsha == repo().head.commit.hexsha:
+                    elif com.hexsha == Setting.repo.head.commit.hexsha:
                         a=True
                         qp.setBrush(QBrush(Qt.green))
                     qp.drawEllipse(self.commit[com.hexsha][2].x()-GitLog.lineHeight/4,self.commit[com.hexsha][2].y()-GitLog.lineHeight/4,GitLog.lineHeight/2,GitLog.lineHeight/2)

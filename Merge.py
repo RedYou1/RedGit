@@ -28,17 +28,17 @@ class MergeLayout(QWidget):
         mid:QHBoxLayout = QHBoxLayout()
 
         self.head1:QTextEdit = QTextEdit()
-        self.head1.setText(CommitContent(repo().git.log("-1",source=True,format='oneline').split('\t')[0],self.selected))
+        self.head1.setText(Setting.CommitContent(Setting.repo.git.log("-1",source=True,format='oneline').split('\t')[0],self.selected))
         mid.addWidget(self.head1)
 
         self.head2:QTextEdit = QTextEdit()
-        self.head2.setText(CommitContent(repo().git.log("-1",merge=True,source=True,format='oneline').split('\t')[0],self.selected))
+        self.head2.setText(Setting.CommitContent(Setting.repo.git.log("-1",merge=True,source=True,format='oneline').split('\t')[0],self.selected))
         mid.addWidget(self.head2)
 
         layout.addLayout(mid)
 
         self.final:QTextEdit = QTextEdit()
-        self.final.setText(ReadFile(self.selected))
+        self.final.setText(Setting.ReadFile(self.selected))
         self.final.textChanged.connect(self.textChanged)
         layout.addWidget(self.final)
 
@@ -64,20 +64,20 @@ class MergeLayout(QWidget):
         self.setLayout(layout)
 
     def textChanged(self):
-        file = open(path()+"\\"+self.selected, "w")
+        file = open(Setting.getInstance()+"\\"+self.selected, "w")
         file.write(self.final.toPlainText())
         file.close()
 
     def validate(self,e):
-        repo().git.add(self.selected)
-        window().Refresh()
+        Setting.repo.git.add(self.selected)
+        Setting.window.Refresh()
 
     def changeFile(self,e):
         self.selected = self.sender().text()
         self.Refresh()
 
     def abort(self,e):
-        repo().git.merge(abort=True)
-        window().Refresh()
+        Setting.repo.git.merge(abort=True)
+        Setting.window.Refresh()
 
 

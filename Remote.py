@@ -25,7 +25,7 @@ class RemoteLayout(QVBoxLayout):
 
         self.addLayout(buts)
 
-        for remote in repo().remotes:
+        for remote in Setting.repo.remotes:
             self.addLayout(self.GitRemote(remote))
         
         add:QPushButton = QPushButton()
@@ -57,8 +57,8 @@ class RemoteLayout(QVBoxLayout):
             self.addWidget(remove)
         
         def remove(self,e):
-            git.Remote.remove(repo=repo(),name=self.remote.name)
-            window().Refresh()
+            git.Remote.remove(repo=Setting.repo,name=self.remote.name)
+            Setting.window.Refresh()
 
         def edit(self,e):
             self.w:self.GitRemoteEdit = self.GitRemoteEdit(self.remote)
@@ -177,12 +177,12 @@ class RemoteLayout(QVBoxLayout):
             def validate(self,e):
                 if len(self.urls) > 0:
                     if self.remote != None:
-                        git.Remote.remove(repo=repo(),name=self.remote.name)
-                    remote = git.Remote.add(repo=repo(),name=self.name.text(),url=self.urls[0].text())
+                        git.Remote.remove(repo=Setting.repo,name=self.remote.name)
+                    remote = git.Remote.add(repo=Setting.repo,name=self.name.text(),url=self.urls[0].text())
                     for i in range(1,len(self.urls)):
                         remote.add_url(url=self.urls[i].text())
                     self.close()
-                    window().Refresh()
+                    Setting.window.Refresh()
 
     def add(self,e):
         self.w:self.GitRemote.GitRemoteEdit = self.GitRemote.GitRemoteEdit(None)

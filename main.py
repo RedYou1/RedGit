@@ -6,22 +6,21 @@ from GitChanges import *
 import easygui
 
 def change_repo():
-    window().hide()
+    Setting.window.hide()
     while True:
         string = easygui.diropenbox()
         if string == None:
             break
         try:
-            setInstance(string)
+            Setting.setInstance(string)
             break
         except:
             pass
-    if len(instances()) == 0:
+    if len(Setting.instances()) == 0:
         sys.exit()
-    w = window()
-    w.show()
-    w.activateWindow()
-    w.Refresh()
+    Setting.window.show()
+    Setting.window.activateWindow()
+    Setting.window.Refresh()
 
 class Instance(QWidget):
     def __init__(self,p:str):
@@ -32,7 +31,7 @@ class Instance(QWidget):
         layout:QHBoxLayout = QHBoxLayout()
 
         label:QLabel = QLabel(p)
-        if self.path == getInstance():
+        if self.path == Setting.getInstance():
             label.setStyleSheet("background-color: cyan;")
         else:
             label.setStyleSheet("background-color: lightgray;")
@@ -47,14 +46,14 @@ class Instance(QWidget):
         self.setLayout(layout)
     
     def remove(self, e):
-        if removeInstance(self.path):
+        if Setting.removeInstance(self.path):
             change_repo()
         else:
-            window().main_win()
+            Setting.window.main_win()
 
     def mousePressEvent(self,e:QMouseEvent) -> None:
-        setInstance(self.path)
-        window().main_win()
+        Setting.setInstance(self.path)
+        Setting.window.main_win()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -64,8 +63,8 @@ class MainWindow(QMainWindow):
         self.showMaximized()
     
     def Refresh(self):
-        if repo():
-            diff:str = repo().git.diff(name_only=True,diff_filter='U')
+        if Setting.repo:
+            diff:str = Setting.repo.git.diff(name_only=True,diff_filter='U')
             if diff != "":
                 self.selected = self.main_win
                 self.merge_win(diff.split('\n'))
@@ -96,7 +95,7 @@ class MainWindow(QMainWindow):
         midLayout:QVBoxLayout = QVBoxLayout()
 
         topLayout:QHBoxLayout = QHBoxLayout()
-        for path in instances():
+        for path in Setting.instances():
             topLayout.addWidget(Instance(path))
         
         add = QPushButton()
@@ -153,22 +152,21 @@ class MainWindow(QMainWindow):
         self.Refresh()
     
     def Stash(self,e):
-        repo().git.stash('save')
+        Setting.repo.git.stash('save')
         self.main_win()
 
     def UnStash(self,e):
-        repo().git.stash('pop')
+        Setting.repo.git.stash('pop')
         self.main_win()
 
 if __name__ == "__main__":
     app:QApplication = QApplication(sys.argv)
-    mainWindow:MainWindow = MainWindow()
-    setWindow(mainWindow)
-    mainWindow.show()
-    ins = getInstance()
+    Setting.window = MainWindow()
+    Setting.window.show()
+    ins = Setting.getInstance()
     if ins != None:
-        setInstance(ins)
-        mainWindow.Refresh()
+        Setting.setInstance(ins)
+        Setting.window.Refresh()
     else:
         change_repo()
     app.exec()
