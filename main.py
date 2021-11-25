@@ -60,13 +60,11 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.selected = self.main_win
         self.setWindowTitle("RedGit")
-        self.showMaximized()
     
     def Refresh(self):
         if Setting.repo:
             diff:str = Setting.repo.git.diff(name_only=True,diff_filter='U')
             if diff != "":
-                self.selected = self.main_win
                 self.merge_win(diff.split('\n'))
             else:
                 self.selected()
@@ -95,9 +93,18 @@ class MainWindow(QMainWindow):
         midLayout:QVBoxLayout = QVBoxLayout()
 
         topLayout:QHBoxLayout = QHBoxLayout()
+
+        instances:QScrollArea = QScrollArea()
+        innerInstances:QWidget = QWidget()
+        instancesLayout:QHBoxLayout = QHBoxLayout()
+        innerInstances.setLayout(instancesLayout)
+        innerInstances.setFixedSize(len(Setting.instances())*250,65)
+        instances.setWidget(innerInstances)
         for path in Setting.instances():
-            topLayout.addWidget(Instance(path))
+            instancesLayout.addWidget(Instance(path))
         
+        topLayout.addWidget(instances)
+
         add = QPushButton()
         add.setCheckable(True)
         add.setText("+")
@@ -162,11 +169,12 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app:QApplication = QApplication(sys.argv)
     Setting.window = MainWindow()
-    Setting.window.show()
     ins = Setting.getInstance()
     if ins != None:
         Setting.setInstance(ins)
         Setting.window.Refresh()
+        Setting.window.showMaximized()
     else:
+        Setting.window.showMaximized()
         change_repo()
     app.exec()

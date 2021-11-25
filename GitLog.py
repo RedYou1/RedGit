@@ -236,6 +236,7 @@ class GitLog(QScrollArea):
 
             self.commit:dict[str,list[Object]] = {}
             y:int = 0
+            maxi:int = 0
             for com in self.log.repo_commits:
                 if not com.hexsha in self.log.commits:
                     i:int = 0
@@ -243,14 +244,13 @@ class GitLog(QScrollArea):
                         if com in self.log.branchs_commits[e]:
                             i = e
                             break
-                    self.commit[com.hexsha] = [com,y,QPoint(i*GitLog.lineHeight/2+GitLog.lineHeight/4,y*GitLog.lineHeight+GitLog.lineHeight/2)]
+                    if i > maxi:
+                        maxi = i
+                    self.commit[com.hexsha] = [com,y,QPoint(i*GitLog.lineHeight+GitLog.lineHeight/2,y*GitLog.lineHeight+GitLog.lineHeight/2)]
                     y += 1
-
-        def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
-            for com in self.commit:
-                commit:list[Object] = self.commit[com]
-                commit[2] = QPoint(commit[2].x(),commit[1]*GitLog.lineHeight+GitLog.lineHeight/2)
-            return super().resizeEvent(a0)
+            
+            self.setFixedWidth((maxi+1)*GitLog.lineHeight)
+            self.setFixedHeight(len(self.log.repo_commits)*GitLog.lineHeight)
 
         def paintEvent(self,e):
             qp:QPainter = QPainter(self)
@@ -280,7 +280,7 @@ class GitLog(QScrollArea):
                             270*16,90*16)
                     elif x1 > x2:
                         qp.drawLine(x1,y1,x2+GitLog.lineHeight/2,y1)
-                        qp.drawLine(x2,y2,x2,y1+GitLog.lineHeight/2)
+                        qp.drawLine(x2,y2,x2,y1-GitLog.lineHeight/2)
                         qp.drawArc(x2,y1-GitLog.lineHeight,
                             GitLog.lineHeight,GitLog.lineHeight,
                             270*16,-90*16)
