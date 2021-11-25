@@ -30,7 +30,7 @@ class Instance(QWidget):
 
         layout:QHBoxLayout = QHBoxLayout()
 
-        label:QLabel = QLabel(p)
+        label:QLabel = QLabel(p.replace('/','\\').split('\\')[-1])
         if self.path == Setting.getInstance():
             label.setStyleSheet("background-color: cyan;")
         else:
