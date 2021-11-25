@@ -12,10 +12,10 @@ class GitChanges(QWidget):
     def Refresh(self):
         layout:QHBoxLayout = QHBoxLayout()
         self.unstaged:QScrollArea = QScrollArea()
-        self.unstaged.setLayout(GitFiles(self,None))
+        self.unstaged.setWidget(GitFiles(self,None))
         layout.addWidget(self.unstaged)
         self.staged:QScrollArea = QScrollArea()
-        self.staged.setLayout(GitFiles(self,'HEAD'))
+        self.staged.setWidget(GitFiles(self,'HEAD'))
         layout.addWidget(self.staged)
 
         
@@ -59,21 +59,25 @@ class GitChanges(QWidget):
         Setting.window.Refresh()
 
 
-class GitFiles(QVBoxLayout):
+class GitFiles(QWidget):
     def __init__(self,changes:GitChanges,branch:str):
         super().__init__()
         
+        layout:QVBoxLayout = QVBoxLayout()
+
         staged:bool = branch != None
 
         self.changes:GitChanges = changes
         self.files:list[Diff] = [ item for item in Setting.repo.index.diff(branch) ]
 
         for file in self.files:
-            self.addWidget(GitFile(self,File.FromDiff(file),staged))
+            layout.addWidget(GitFile(self,File.FromDiff(file),staged))
         
         if not staged:
             for file in Setting.repo.untracked_files:
-                self.addWidget(GitFile(self,File.Now(file),False))
+                layout.addWidget(GitFile(self,File.Now(file),False))
+        
+        self.setLayout(layout)
 
 
 class GitFile(QWidget):
