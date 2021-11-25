@@ -30,7 +30,10 @@ class File():
             
         a_blob:list[str] = [""]
         if diff.a_blob:
-            a_blob:list[str] = diff.a_blob.data_stream.read().decode('utf-8').split('\n')
+            try:
+                a_blob:list[str] = diff.a_blob.data_stream.read().decode('utf-8').split('\n')
+            except Exception:
+                a_blob:list[str] = ["Can't read"]
         return File(diff.a_path,diff.b_path,a_blob,file2)
 
 class Setting():
@@ -40,9 +43,12 @@ class Setting():
     __instance:str = None
 
     def ReadFile(__path:str) -> str:
-        t = open(Setting.getInstance()+"\\"+__path, "r")
-        r = t.read()
-        t.close()
+        try:
+            t = open(Setting.getInstance()+"\\"+__path, "r")
+            r = t.read()
+            t.close()
+        except Exception:
+            r = "Can't read"
         return r
 
     def CommitContent(commitID:str,file:str) -> str:
