@@ -60,6 +60,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.selected = self.main_win
         self.setWindowTitle("RedGit")
+        self.setStyleSheet(Setting.getThemeCode())
     
     def Refresh(self):
         if Setting.repo:
@@ -138,6 +139,11 @@ class MainWindow(QMainWindow):
         actu.clicked.connect(self.SetRemotes)
         topmidLayout.addWidget(actu)
 
+        actu:QComboBox = QComboBox()
+        actu.addItems(Setting.getThemes())
+        actu.currentTextChanged.connect(self.themeChange)
+        topmidLayout.addWidget(actu)
+
         midLayout.addLayout(topmidLayout)
 
         midLayout.addWidget(GitLog())
@@ -165,6 +171,10 @@ class MainWindow(QMainWindow):
     def UnStash(self,e):
         Setting.repo.git.stash('pop')
         self.main_win()
+
+    def themeChange(self,e):
+        Setting.setTheme(e)
+        self.setStyleSheet(Setting.getThemeCode())
 
 if __name__ == "__main__":
     app:QApplication = QApplication(sys.argv)

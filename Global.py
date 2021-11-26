@@ -41,6 +41,8 @@ class Setting():
     window:QMainWindow = None
     file_setting:str = os.getcwd()+"/settings.txt"
     __instance:str = None
+    themePath:str = os.getcwd()+"/Themes/"
+    themeName:str = ""
 
     def ReadFile(__path:str) -> str:
         try:
@@ -70,6 +72,49 @@ class Setting():
     def getInstance() -> str:
         return Setting.__instance
     
+    def setTheme(name:str):
+        Setting.themeName = name
+        file = open(Setting.file_setting,'r')
+        lines = file.readlines()
+        file.close()
+        i = 0
+        while not lines[i].startswith("Theme:"):
+            i += 1
+        lines.remove(lines[i])
+        lines.insert(i,"Theme:"+name+'\n')
+        file = open(Setting.file_setting,'w')
+        file.writelines(lines)
+        file.close()
+
+    def getThemes() -> list[str]:
+        l:list[str] = os.listdir(Setting.themePath)
+        for i in range(len(l)):
+            l[i] = l[i].removesuffix('.css')
+        l.remove(Setting.themeName)
+        l.insert(0,Setting.themeName)
+        return l
+
+    def getThemeCode() -> str:
+        if not exists(Setting.themePath+Setting.themeName+".css"):
+            return ""
+        file = open(Setting.themePath+Setting.themeName+".css",'r')
+        line = "".join(file.readlines())
+        file.close()
+        return line
+
+    def refreshTheme() -> str:
+        file = open(Setting.file_setting,'r')
+        lines = file.readlines()
+        i = 0
+        while not lines[i].startswith("Theme:"):
+            i += 1
+        file.close()
+        line = lines[i].removeprefix("Theme:").removesuffix('\n')
+        if line == "":
+            line = None
+        Setting.themeName = line
+        return line
+
     def refreshInstance() -> str:
         file = open(Setting.file_setting,'r')
         lines = file.readlines()
@@ -129,7 +174,8 @@ class Setting():
 
 if not exists(Setting.file_setting):
     file = open(Setting.file_setting,'w')
-    file.write("Instance:\nInstances:\nTheme:")
+    file.write("Instance:\nInstances:\nTheme:Default\n")
     file.close()
 
 Setting.refreshInstance()
+Setting.refreshTheme()
