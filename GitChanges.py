@@ -120,7 +120,9 @@ class GitFile(QWidget):
         self.setLayout(layout)
 
         if GitChanges.selected and self.file.a_path == GitChanges.selected.a_path and self.file.b_path == GitChanges.selected.b_path:
-            label.setStyleSheet("background-color: cyan;")
+            label.setObjectName("Instance_QLabel_Selected")
+        else:
+            label.setObjectName("Instance_QLabel")
     
     def stage(self,e):
         Setting.repo.git.add(self.file.b_path)

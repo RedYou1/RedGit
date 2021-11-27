@@ -64,6 +64,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("RedGit")
         self.setStyleSheet(Setting.getThemeCode())
     
+    def updateStyle(self):
+        self.setStyleSheet(Setting.getThemeCode())
+
     def Refresh(self):
         if Setting.repo:
             diff:str = Setting.repo.git.diff(name_only=True,diff_filter='U')

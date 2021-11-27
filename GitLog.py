@@ -223,16 +223,15 @@ class GitLog(QScrollArea):
             ele:list[Object] = self.row[self.selected]
             for i in range(1,len(ele)):
                 if self.selected == Setting.repo.head.commit.hexsha:
-                    ele[i].setStyleSheet("commitHead")
+                    ele[i].setObjectName("commitHead")
                 else:
-                    ele[i].setStyleSheet("commit")
-                ele[i].repaint()
+                    ele[i].setObjectName("commit")
         self.selected:str = self.row[int((e.globalY()-self.y()+self.verticalScrollBar().value())/GitLog.lineHeight)-1][0]
         ele:list[Object] = self.row[self.selected]
         for i in range(1,len(ele)):
-            ele[i].setStyleSheet("commitSelected")
-            ele[i].repaint()
+            ele[i].setObjectName("commitSelected")
         self.cercle.repaint()
+        Setting.window.updateStyle()
 
     class Cercles(QWidget):
         def __init__(self,log):

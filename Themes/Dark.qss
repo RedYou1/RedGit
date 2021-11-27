@@ -1,27 +1,29 @@
 #Instance_QLabel_Selected{
-    background-color: darkblue;
+  background-color: darkblue;
 }
 #Instance_QLabel{
-    background-color: #0A0A0A;
+  background-color: #0A0A0A;
 }
 
 #commitSelected{
-    border:1px solid black;
-    background-color: darkblue;
+  border:1px solid black;
+  background-color: darkblue;
 }
 #commitHead{
-    border:1px solid black;
-    background-color: #0A0A0A;
+  border:1px solid black;
+  background-color: #0A0A0A;
 }
 #commit{
-    border:1px solid black;
+  border:1px solid black;
 }
 
 #Head{
-    border:hidden;
+  border:hidden;
+  background-color: transparent;
 }
 #HeadSelected{
-    font-weight: bold;
+  font-weight: bold;
+  background-color: transparent;
 }
 
 /* ---------------------------------------------------------------------------
