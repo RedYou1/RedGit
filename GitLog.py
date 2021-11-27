@@ -178,6 +178,7 @@ class GitLog(QScrollArea):
                 h.addWidget(create)
                 v.addLayout(h)
                 self.msg.setLayout(v)
+                self.msg.setStyleSheet(Setting.getThemeCode())
                 self.msg.show()
             if action in delBranchActs:
                 if not Setting.repo.head.is_detached and action.text() == Setting.repo.active_branch.name:

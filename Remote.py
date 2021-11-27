@@ -73,6 +73,7 @@ class RemoteLayout(QVBoxLayout):
                 self.urls:list[QLineEdit] = []
                 self.name = None
                 self.setWindowTitle("Edit Remote")
+                self.setStyleSheet(Setting.getThemeCode())
                 self.Refresh()
 
             def Refresh(self):
