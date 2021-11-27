@@ -51,28 +51,19 @@ class GitLog(QScrollArea):
         for com in self.repo_commits:
             if not com.hexsha in self.commits:
 
-                style:str = "border:1px solid black;"
-                
-                if com.hexsha == self.selected:
-                    style += "background-color: cyan;"
-                elif com.hexsha == Setting.repo.head.commit.hexsha:
-                    style += "background-color: lightgreen;"
-
-
                 temp:QHBoxLayout = QHBoxLayout()
                 for i in range(len(self.columns)):
                     if com == self.branchs_commits[i][0]:
                         t:QLabel = QLabel(self.columns[i].name)
-                        tstyle:str = "border:hidden;"
                         if (Setting.repo.head.is_detached and self.columns[i].name == "HEAD") or \
                             (not Setting.repo.head.is_detached and self.columns[i] == Setting.repo.head.ref):
-                            tstyle += "font-weight: bold;"
-                        t.setStyleSheet(tstyle)
+                            t.setObjectName("HeadSelected")
+                        else:
+                            t.setObjectName("Head")
                         temp.addWidget(t)
                 wid:QWidget = QWidget()
                 wid.setLayout(temp)
                 wid.setFixedHeight(GitLog.lineHeight)
-                wid.setStyleSheet(style)
                 wid.mousePressEvent = self.commitMousePress
                 self.nom_heads.addWidget(wid)
                 temp:int = temp.count()
@@ -80,19 +71,32 @@ class GitLog(QScrollArea):
                     max:int = temp
                 nom_commit:QLabel = QLabel(com.message.split('\n')[0])
                 nom_commit.setFixedHeight(GitLog.lineHeight)
-                nom_commit.setStyleSheet(style)
                 nom_commit.mousePressEvent = self.commitMousePress
                 self.nom_commits.addWidget(nom_commit)
                 author_name:QLabel = QLabel(com.author.name)
                 author_name.setFixedHeight(GitLog.lineHeight)
-                author_name.setStyleSheet(style)
                 author_name.mousePressEvent = self.commitMousePress
                 self.nom_authors.addWidget(author_name)
                 hex:QLabel = QLabel(com.hexsha)
                 hex.setFixedHeight(GitLog.lineHeight)
-                hex.setStyleSheet(style)
                 hex.mousePressEvent = self.commitMousePress
                 self.id_commits.addWidget(hex)
+
+                if com.hexsha == self.selected:
+                    wid.setObjectName("commitSelected")
+                    nom_commit.setObjectName("commitSelected")
+                    author_name.setObjectName("commitSelected")
+                    hex.setObjectName("commitSelected")
+                elif com.hexsha == Setting.repo.head.commit.hexsha:
+                    wid.setObjectName("commitHead")
+                    nom_commit.setObjectName("commitHead")
+                    author_name.setObjectName("commitHead")
+                    hex.setObjectName("commitHead")
+                else:
+                    wid.setObjectName("commit")
+                    nom_commit.setObjectName("commit")
+                    author_name.setObjectName("commit")
+                    hex.setObjectName("commit")
 
                 self.row[y] = [com.hexsha,wid,nom_commit,author_name,hex]
                 self.row[com.hexsha] = [y,wid,nom_commit,author_name,hex]
@@ -218,14 +222,16 @@ class GitLog(QScrollArea):
         if self.selected in self.row:
             ele:list[Object] = self.row[self.selected]
             for i in range(1,len(ele)):
-                style:str = "border:1px solid black;"
                 if self.selected == Setting.repo.head.commit.hexsha:
-                    style += "background-color: lightgreen;"
-                ele[i].setStyleSheet(style)
+                    ele[i].setStyleSheet("commitHead")
+                else:
+                    ele[i].setStyleSheet("commit")
+                ele[i].repaint()
         self.selected:str = self.row[int((e.globalY()-self.y()+self.verticalScrollBar().value())/GitLog.lineHeight)-1][0]
         ele:list[Object] = self.row[self.selected]
         for i in range(1,len(ele)):
-            ele[i].setStyleSheet("border:1px solid black;background-color: cyan;")
+            ele[i].setStyleSheet("commitSelected")
+            ele[i].repaint()
         self.cercle.repaint()
 
     class Cercles(QWidget):

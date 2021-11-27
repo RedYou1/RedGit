@@ -26,15 +26,17 @@ class Instance(QWidget):
     def __init__(self,p:str):
         super().__init__()
 
+        self.setObjectName("Instance")
+
         self.path:str = p
 
         layout:QHBoxLayout = QHBoxLayout()
 
         label:QLabel = QLabel(p.replace('/','\\').split('\\')[-1])
         if self.path == Setting.getInstance():
-            label.setStyleSheet("background-color: cyan;")
+            label.setObjectName("Instance_QLabel_Selected")
         else:
-            label.setStyleSheet("background-color: lightgray;")
+            label.setObjectName("Instance_QLabel")
         layout.addWidget(label)
 
         remove:QPushButton = QPushButton()
@@ -140,7 +142,7 @@ class MainWindow(QMainWindow):
         topmidLayout.addWidget(actu)
 
         actu:QComboBox = QComboBox()
-        actu.addItems(Setting.getThemes())
+        actu.addItems(Setting.themes)
         actu.currentTextChanged.connect(self.themeChange)
         topmidLayout.addWidget(actu)
 

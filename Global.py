@@ -41,8 +41,9 @@ class Setting():
     window:QMainWindow = None
     file_setting:str = os.getcwd()+"/settings.txt"
     __instance:str = None
-    themePath:str = os.getcwd()+"/Themes/"
     themeName:str = ""
+    themes:list[str] = ["Dark","Default"]
+    themePath:str = os.getcwd()+"/Themes/"
 
     def ReadFile(__path:str) -> str:
         try:
@@ -85,22 +86,17 @@ class Setting():
         file = open(Setting.file_setting,'w')
         file.writelines(lines)
         file.close()
-
-    def getThemes() -> list[str]:
-        l:list[str] = os.listdir(Setting.themePath)
-        for i in range(len(l)):
-            l[i] = l[i].removesuffix('.css')
-        l.remove(Setting.themeName)
-        l.insert(0,Setting.themeName)
-        return l
+        Setting.themes.remove(name)
+        Setting.themes.insert(0,name)
 
     def getThemeCode() -> str:
-        if not exists(Setting.themePath+Setting.themeName+".css"):
+        if not exists(Setting.themePath+Setting.themeName+".qss"):
             return ""
-        file = open(Setting.themePath+Setting.themeName+".css",'r')
-        line = "".join(file.readlines())
+        
+        file = open(Setting.themePath+Setting.themeName+".qss",'r')
+        style = "".join(file.readlines())
         file.close()
-        return line
+        return style
 
     def refreshTheme() -> str:
         file = open(Setting.file_setting,'r')
@@ -113,6 +109,8 @@ class Setting():
         if line == "":
             line = None
         Setting.themeName = line
+        Setting.themes.remove(line)
+        Setting.themes.insert(0,line)
         return line
 
     def refreshInstance() -> str:
