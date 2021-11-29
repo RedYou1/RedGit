@@ -11,12 +11,28 @@ class GitChanges(QWidget):
 
     def Refresh(self):
         layout:QHBoxLayout = QHBoxLayout()
+
+        layoutUnStage:QVBoxLayout = QVBoxLayout()
+        stageall:QPushButton = QPushButton()
+        stageall.setText("Stage All")
+        stageall.setCheckable(True)
+        stageall.clicked.connect(self.stageAll)
+        layoutUnStage.addWidget(stageall)
         self.unstaged:QScrollArea = QScrollArea()
         self.unstaged.setWidget(GitFiles(self,None))
-        layout.addWidget(self.unstaged)
+        layoutUnStage.addWidget(self.unstaged)
+        layout.addLayout(layoutUnStage)
+
+        layoutStage:QVBoxLayout = QVBoxLayout()
+        unstageall:QPushButton = QPushButton()
+        unstageall.setText("UnStage All")
+        unstageall.setCheckable(True)
+        unstageall.clicked.connect(self.unStageAll)
+        layoutStage.addWidget(unstageall)
         self.staged:QScrollArea = QScrollArea()
         self.staged.setWidget(GitFiles(self,'HEAD'))
-        layout.addWidget(self.staged)
+        layoutStage.addWidget(self.staged)
+        layout.addLayout(layoutStage)
 
         
         temp:QVBoxLayout = QVBoxLayout()
@@ -36,6 +52,14 @@ class GitChanges(QWidget):
         if self.layout():
             QWidget().setLayout(self.layout())
         self.setLayout(layout)
+
+    def stageAll(self,e):
+        Setting.repo.git.add('.')
+        self.Refresh()
+
+    def unStageAll(self,e):
+        Setting.repo.git.restore('.',staged=True)
+        self.Refresh()
 
     def actuText(self):
         if GitChanges.selected:

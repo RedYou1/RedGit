@@ -22,7 +22,7 @@ class GitLog(QScrollArea):
         container.setFixedSize(1500,len(self.repo_commits)*GitLog.lineHeight)
         self.setWidget(container)
 
-        self.columns:list[list[Commit]] = []
+        self.columns:list[Reference] = []
         self.branchs_commits:list[list[Commit]] = []
 
         self.nom_heads:QVBoxLayout = QVBoxLayout()
@@ -34,9 +34,10 @@ class GitLog(QScrollArea):
         if Setting.repo.head.is_detached:
             temp.append(Setting.repo.head)
 
-        temp2:list[Tuple[datetime,list[Commit]]] = []
+        temp2:list[Tuple[datetime,Reference]] = []
         for b in self.branchs:
-            temp2.append((b.commit.committed_datetime,b))
+            if b.is_valid():
+                temp2.append((b.commit.committed_datetime,b))
         def takeFirst(ele):
             return ele[0]
         temp2.sort(key=takeFirst,reverse=True)
