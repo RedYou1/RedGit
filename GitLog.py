@@ -36,8 +36,7 @@ class GitLog(QScrollArea):
 
         temp2:list[Tuple[datetime,Reference]] = []
         for b in self.branchs:
-            if b.is_valid():
-                temp2.append((b.commit.committed_datetime,b))
+            temp2.append((b.commit.committed_datetime,b))
         def takeFirst(ele):
             return ele[0]
         temp2.sort(key=takeFirst,reverse=True)
