@@ -47,7 +47,7 @@ class Setting():
 
     def ReadFile(__path:str) -> str:
         try:
-            t = open(Setting.getInstance()+"\\"+__path, "r")
+            t = open(Setting.getInstance()+"\\"+__path, "r",encoding="utf-8")
             r = t.read()
             t.close()
         except Exception:
