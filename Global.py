@@ -44,6 +44,7 @@ class Setting():
     themeName:str = ""
     themes:list[str] = ["Dark","Default"]
     themePath:str = os.getcwd()+"/Themes/"
+    showFolder:bool = False
 
     def ReadFile(__path:str) -> str:
         try:

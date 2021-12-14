@@ -62,7 +62,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.selected = self.main_win
         self.setWindowTitle("RedGit")
-        self.setStyleSheet(Setting.getThemeCode())
+        self.updateStyle()
     
     def updateStyle(self):
         self.setStyleSheet(Setting.getThemeCode())
