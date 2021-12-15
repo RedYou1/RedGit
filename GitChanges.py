@@ -101,6 +101,8 @@ class GitFiles(QWidget):
     def __init__(self,changes:GitChanges,branch:str):
         super().__init__()
         
+        self.setObjectName("GitFiles")
+        
         layout:QVBoxLayout = QVBoxLayout()
 
         self.staged:bool = branch != None
@@ -236,7 +238,7 @@ class GitFile(QWidget):
         self.files.changes.Refresh()
 
     def removed(self,e):
-        if self.staged:
+        if self.files.staged:
             self.unStage(None)
         if self.file.b_path in Setting.repo.untracked_files:
             os.remove(Setting.getInstance()+"\\"+self.file.b_path)
@@ -256,6 +258,7 @@ class GitFolder(QWidget):
         self._parent = parent
         self.name = name
         self.files:list[Union[File,Tuple[list,str]]] = files
+        self.setObjectName("GitFolder")
         self.Refresh()
         
     def mousePressEvent(self, a0: QtGui.QMouseEvent) -> None:
@@ -266,16 +269,10 @@ class GitFolder(QWidget):
     def Refresh(self):
         layout:QVBoxLayout = QVBoxLayout()
         
-        layoutH:QHBoxLayout = QHBoxLayout()
-        
         if self.shown:
-            layoutH.addWidget(QLabel("[down]"))
+            layout.addWidget(QLabel("[down]"+self.name))
         else:
-            layoutH.addWidget(QLabel(">"))
-            
-        layoutH.addWidget(QLabel(self.name))
-        
-        layout.addLayout(layoutH)
+            layout.addWidget(QLabel(">"+self.name))
         
         if self.shown:
             l:QVBoxLayout = QVBoxLayout()
