@@ -1,0 +1,5 @@
+python 3.9
+modules:
+GitPython
+easygui
+PyQt5
